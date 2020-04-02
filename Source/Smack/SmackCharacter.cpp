@@ -9,6 +9,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Camera/CameraComponent.h"
+#include "DrawDebugHelpers.h"
+#include "Engine/Engine.h"
 
 DEFINE_LOG_CATEGORY_STATIC(SideScrollerCharacter, Log, All);
 
@@ -95,6 +97,61 @@ void ASmackCharacter::UpdateAnimation()
 void ASmackCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	//FHitResult OutHit;
+
+	//FVector Start = GetActorLocation();
+
+	//FVector ForwardVector = GetActorForwardVector();
+	//FVector End = ((ForwardVector * 150.f) + Start);
+	//FCollisionQueryParams CollisionParams;
+
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Black, false, .01, 0, 3);
+
+	//if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams))
+	//{
+	//	if (OutHit.bBlockingHit)
+	//	{
+	//		if (GEngine) {
+
+	//			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("You are hitting: %s"), *OutHit.GetActor()->GetName()));
+	//			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Impact Point: %s"), *OutHit.ImpactPoint.ToString()));
+	//			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Normal Point: %s"), *OutHit.ImpactNormal.ToString()));
+
+	//		}
+	//	}
+	//}
+		
+// create tarray for hit results
+	TArray<FHitResult> OutHits;
+
+	// start and end locations
+	FVector SweepStart = GetActorLocation();
+	FVector SweepEnd = GetActorLocation();
+
+	// create a collision sphere
+	FCollisionShape MyColSphere = FCollisionShape::MakeSphere(100.0f);
+
+	// draw collision sphere
+	DrawDebugSphere(GetWorld(), GetActorLocation(), MyColSphere.GetSphereRadius(), 10, FColor::Purple, false, .01, 2);
+
+	// check if something got hit in the sweep
+	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_WorldStatic, MyColSphere);
+
+	if (isHit)
+	{
+		// loop through TArray
+		for (auto& Hit : OutHits)
+		{
+			if (GEngine)
+			{
+				// screen log information on what was hit
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), *Hit.Actor->GetName()));
+				// uncommnet to see more info on sweeped actor
+				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
+			}
+		}
+	}
 	
 	UpdateCharacter();	
 }
