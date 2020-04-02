@@ -11,6 +11,7 @@
 #include "Camera/CameraComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/Engine.h"
+#include "math.h"
 
 DEFINE_LOG_CATEGORY_STATIC(SideScrollerCharacter, Log, All);
 
@@ -28,27 +29,16 @@ ASmackCharacter::ASmackCharacter()
 	GetCapsuleComponent()->SetCapsuleHalfHeight(96.0f);
 	GetCapsuleComponent()->SetCapsuleRadius(40.0f);
 
-	//// Create a camera boom attached to the root (capsule)
-	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	//CameraBoom->SetupAttachment(RootComponent);
-	//CameraBoom->TargetArmLength = 500.0f;
-	//CameraBoom->SocketOffset = FVector(0.0f, 0.0f, 75.0f);
-	//CameraBoom->SetUsingAbsoluteRotation(true);
-	//CameraBoom->bDoCollisionTest = false;
-	//CameraBoom->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-	//
+	for (int i = 0; i <= 180; i += 10)
+	{
+		FVector vector = FVector(FMath::Sin(FMath::DegreesToRadians(i)) * 150, 0, FMath::Cos(FMath::DegreesToRadians(i)) * 150);
+		SemicircleTraceArray.Add(vector);
+	}
 
-	//// Create an orthographic camera (no perspective) and attach it to the boom
-	//SideViewCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("SideViewCamera"));
-	//SideViewCameraComponent->ProjectionMode = ECameraProjectionMode::Orthographic;
-	//SideViewCameraComponent->OrthoWidth = 2048.0f;
-	//SideViewCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-
-	//// Prevent all automatic rotation behavior on the camera, character, and camera component
-	//CameraBoom->SetUsingAbsoluteRotation(true);
-	//SideViewCameraComponent->bUsePawnControlRotation = false;
-	//SideViewCameraComponent->bAutoActivate = true;
-	//GetCharacterMovement()->bOrientRotationToMovement = false;
+	//for (auto& vec : SemicircleTraceArray)
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("Trace Array Vector: %s"), *vec.ToCompactString()));
+	//}
 
 	// Configure character movement
 	GetCharacterMovement()->GravityScale = 2.0f;
@@ -98,60 +88,60 @@ void ASmackCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	//FHitResult OutHit;
+	FHitResult OutHit;
 
-	//FVector Start = GetActorLocation();
+	FVector Start = GetActorLocation();
+	FVector Front = GetActorForwardVector();
+	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("Front= : %f"), Front.X));
 
-	//FVector ForwardVector = GetActorForwardVector();
-	//FVector End = ((ForwardVector * 150.f) + Start);
-	//FCollisionQueryParams CollisionParams;
-
-	//DrawDebugLine(GetWorld(), Start, End, FColor::Black, false, .01, 0, 3);
-
-	//if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams))
-	//{
-	//	if (OutHit.bBlockingHit)
-	//	{
-	//		if (GEngine) {
-
-	//			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("You are hitting: %s"), *OutHit.GetActor()->GetName()));
-	//			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Impact Point: %s"), *OutHit.ImpactPoint.ToString()));
-	//			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Normal Point: %s"), *OutHit.ImpactNormal.ToString()));
-
-	//		}
-	//	}
-	//}
-		
-// create tarray for hit results
-	TArray<FHitResult> OutHits;
-
-	// start and end locations
-	FVector SweepStart = GetActorLocation();
-	FVector SweepEnd = GetActorLocation();
-
-	// create a collision sphere
-	FCollisionShape MyColSphere = FCollisionShape::MakeSphere(100.0f);
-
-	// draw collision sphere
-	DrawDebugSphere(GetWorld(), GetActorLocation(), MyColSphere.GetSphereRadius(), 10, FColor::Purple, false, .01, 2);
-
-	// check if something got hit in the sweep
-	bool isHit = GetWorld()->SweepMultiByChannel(OutHits, SweepStart, SweepEnd, FQuat::Identity, ECC_WorldStatic, MyColSphere);
-
-	if (isHit)
+	for (auto& i : SemicircleTraceArray)
 	{
-		// loop through TArray
-		for (auto& Hit : OutHits)
+		FVector End = FVector((Start.X + (i.X * Front.X)), (Start.Y + i.Y), (Start.Z + i.Z));
+		DrawDebugLine(GetWorld(), Start, End, FColor::Black, false, .01, 0, 3);
+	}
+
+	FCollisionQueryParams CollisionParams;
+
+	/*if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, Front, ECC_Visibility, CollisionParams))
+	{
+		if (OutHit.bBlockingHit)
 		{
-			if (GEngine)
-			{
-				// screen log information on what was hit
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), *Hit.Actor->GetName()));
-				// uncommnet to see more info on sweeped actor
-				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
+			if (GEngine) {
+
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("You are hitting: %s"), *OutHit.GetActor()->GetName()));
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Impact Point: %s"), *OutHit.ImpactPoint.ToString()));
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Normal Point: %s"), *OutHit.ImpactNormal.ToString()));
+
 			}
 		}
-	}
+	}*/
+		
+	///Sphere Trace Using SweepBySingleChannel
+	//FHitResult OutHit;
+
+	//// start and end locations
+	//FVector SweepStart = GetActorLocation();
+	//FVector SweepEnd = GetActorLocation();
+
+	//// create a collision sphere
+	//FCollisionShape MyColSphere = FCollisionShape::MakeSphere(100.0f);
+
+	//// draw collision sphere
+	//DrawDebugSphere(GetWorld(), GetActorLocation(), MyColSphere.GetSphereRadius(), 25, FColor::Purple, false, .01, 2);
+
+	//// check if something got hit in the sweep
+	//bool isHit = GetWorld()->SweepSingleByChannel(OutHit, SweepStart, SweepEnd, FQuat::Identity, ECC_WorldStatic, MyColSphere);
+
+	//if (isHit)
+	//{
+	//	if (GEngine)
+	//	{
+	//		// screen log information on what was hit
+	//		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Hit Result: %s"), OutHit.Actor->GetName()));
+	//		// uncommnet to see more info on sweeped actor
+	//		// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
+	//	}
+	//}
 	
 	UpdateCharacter();	
 }
