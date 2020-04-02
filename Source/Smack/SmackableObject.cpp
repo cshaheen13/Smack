@@ -21,22 +21,22 @@ ASmackableObject::ASmackableObject()
 
 	//SmackablePhysicsMaterial = CreateDefaultSubobject<UPhysicsMaterial>(TEXT("<SmackablePhysicsMaterial>"));
 
-	FVector spawnLocation = FVector(0, 0, 500);
+	FVector spawnLocation = FVector(0, -25, 500);
 	FRotator spawnRotation = FRotator(0, 0, 90);
-	FVector scale = FVector(0.5, 0.5, 0.1);
+	FVector scale = FVector(0.5, 0.5, .5);
 
 	MeshComponent->SetWorldLocationAndRotation(spawnLocation, spawnRotation);
 	MeshComponent->SetRelativeScale3D(scale);
 	MeshComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	MeshComponent->SetSimulatePhysics(true);
 	MeshComponent->SetConstraintMode(EDOFMode::XZPlane);
-	MeshComponent->SetNotifyRigidBodyCollision(true);
-	//MeshComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	MeshComponent->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECR_Block);
+	MeshComponent->SetCollisionObjectType(ECC_WorldStatic);
 
-	Overlap = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CAPSULE"));
+	/*Overlap = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CAPSULE"));
 	Overlap->InitCapsuleSize(25, 25);
 	Overlap->SetCollisionProfileName(TEXT("Overlap Trigger"));
-	Overlap->SetupAttachment(RootComponent);
+	Overlap->SetupAttachment(RootComponent);*/
 	//Overlap->OnComponentBeginOverlap.AddDynamic(this, &ASmackableObject::BeginOverlap);
 	//Overlap->OnComponentBeginOverlap.AddDynamic(this, &ASmackableObject::EndOverlap);
 
@@ -52,6 +52,6 @@ void ASmackableObject::BeginPlay()
 void ASmackableObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UKismetSystemLibrary::DrawDebugCapsule(GetWorld(), GetActorLocation(), 25, 25, FRotator(0, 0, 0), FLinearColor::Red, 0.25f, 3.f);
+	//UKismetSystemLibrary::DrawDebugCapsule(GetWorld(), GetActorLocation(), 25, 25, FRotator(0, 0, 0), FLinearColor::Red, 0.25f, 3.f);
 }
 

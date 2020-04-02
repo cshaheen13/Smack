@@ -29,6 +29,7 @@ ASmackCharacter::ASmackCharacter()
 	GetCapsuleComponent()->SetCapsuleHalfHeight(96.0f);
 	GetCapsuleComponent()->SetCapsuleRadius(40.0f);
 
+	//Set the vectors for the semicircle trace in front of the character
 	for (int i = 0; i <= 180; i += 10)
 	{
 		FVector vector = FVector(FMath::Sin(FMath::DegreesToRadians(i)) * 150, 0, FMath::Cos(FMath::DegreesToRadians(i)) * 150);
@@ -88,33 +89,35 @@ void ASmackCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	//Semicircle Line Trace in front of the character
 	FHitResult OutHit;
+	FCollisionQueryParams CollisionParams(FName(TEXT("SmackableTrace")), true, this);
 
 	FVector Start = GetActorLocation();
 	FVector Front = GetActorForwardVector();
-	GEngine->AddOnScreenDebugMessage(-1, 50.f, FColor::Red, FString::Printf(TEXT("Front= : %f"), Front.X));
 
 	for (auto& i : SemicircleTraceArray)
 	{
 		FVector End = FVector((Start.X + (i.X * Front.X)), (Start.Y + i.Y), (Start.Z + i.Z));
-		DrawDebugLine(GetWorld(), Start, End, FColor::Black, false, .01, 0, 3);
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, .01, 0, 3);
+
+		bool isSmackableHit = GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_GameTraceChannel2, CollisionParams);
+		//if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams))
+		//{
+			if (isSmackableHit)
+			{
+				if (GEngine) {
+
+					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("You are hitting: %s"), *OutHit.GetActor()->GetName()));
+					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("Impact Point: %s"), *OutHit.ImpactPoint.ToString()));
+					//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("Normal Point: %s"), *OutHit.ImpactNormal.ToString()));
+
+				}
+			}
+		//}
 	}
 
-	FCollisionQueryParams CollisionParams;
-
-	/*if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, Front, ECC_Visibility, CollisionParams))
-	{
-		if (OutHit.bBlockingHit)
-		{
-			if (GEngine) {
-
-				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("You are hitting: %s"), *OutHit.GetActor()->GetName()));
-				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Impact Point: %s"), *OutHit.ImpactPoint.ToString()));
-				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Normal Point: %s"), *OutHit.ImpactNormal.ToString()));
-
-			}
-		}
-	}*/
+	UpdateCharacter();
 		
 	///Sphere Trace Using SweepBySingleChannel
 	//FHitResult OutHit;
@@ -142,8 +145,6 @@ void ASmackCharacter::Tick(float DeltaSeconds)
 	//		// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
 	//	}
 	//}
-	
-	UpdateCharacter();	
 }
 
 
