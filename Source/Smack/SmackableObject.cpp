@@ -7,6 +7,7 @@
 #include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Components/PrimitiveComponent.h"
 
 // Sets default values
 ASmackableObject::ASmackableObject()
@@ -53,5 +54,11 @@ void ASmackableObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	//UKismetSystemLibrary::DrawDebugCapsule(GetWorld(), GetActorLocation(), 25, 25, FRotator(0, 0, 0), FLinearColor::Red, 0.25f, 3.f);
+}
+
+void ASmackableObject::AddImpulse()
+{
+	FVector impulse = FVector(1500, 0, 1500);
+	MeshComponent->AddImpulse(impulse, "None", true);
 }
 

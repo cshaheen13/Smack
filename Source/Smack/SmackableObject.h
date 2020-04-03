@@ -32,6 +32,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	class UPhysicsConstraintComponent* PhysicsConstraint;
 
+	void AddImpulse();
+
 	/*UPROPERTY(VisibleAnywhere)
 	class UPhysicsMaterial* SmackablePhysicsMaterial;*/
 

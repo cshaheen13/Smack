@@ -12,6 +12,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/Engine.h"
 #include "math.h"
+#include "SmackableObject.h"
 
 DEFINE_LOG_CATEGORY_STATIC(SideScrollerCharacter, Log, All);
 
@@ -69,6 +70,16 @@ ASmackCharacter::ASmackCharacter()
 	bReplicates = true;
 }
 
+//WinLightLocation = FVector(RandDistance, 865, 40);
+//WinLightRotation = FRotator(-90, 270, -180);
+//WinLight = GetWorld()->SpawnActor<ARectLight>(WinLightLocation, WinLightRotation);
+//WinLight->SetLightColor(FLinearColor::Blue);
+////***Cast Component onto Actor***
+//URectLightComponent * GetWinLight = Cast<URectLightComponent>(WinLight->GetComponentByClass(URectLightComponent::StaticClass()));
+//GetWinLight->SetMobility(EComponentMobility::Movable);
+//GetWinLight->SetSourceWidth(115);
+//GetWinLight->SetSourceHeight(115);
+
 //////////////////////////////////////////////////////////////////////////
 // Animation
 
@@ -106,6 +117,27 @@ void ASmackCharacter::Tick(float DeltaSeconds)
 		//{
 			if (isSmackableHit)
 			{
+				//WinLightLocation = FVector(RandDistance, 865, 40);
+				//WinLightRotation = FRotator(-90, 270, -180);
+				//WinLight = GetWorld()->SpawnActor<ARectLight>(WinLightLocation, WinLightRotation);
+				//WinLight->SetLightColor(FLinearColor::Blue);
+				////***Cast Component onto Actor***
+				//URectLightComponent * GetWinLight = Cast<URectLightComponent>(WinLight->GetComponentByClass(URectLightComponent::StaticClass()));
+				//GetWinLight->SetMobility(EComponentMobility::Movable);
+				//GetWinLight->SetSourceWidth(115);
+				//GetWinLight->SetSourceHeight(115);
+
+				ASmackableObject * SmackableObject = Cast<ASmackableObject>(OutHit.GetActor());
+				if (SmackableObject)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Cast To: %s"), *OutHit.GetActor()->GetName()));
+					SmackableObject->AddImpulse();
+				}
+				else
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("No Cast")));
+				}
+
 				if (GEngine) {
 
 					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("You are hitting: %s"), *OutHit.GetActor()->GetName()));
