@@ -70,16 +70,6 @@ ASmackCharacter::ASmackCharacter()
 	bReplicates = true;
 }
 
-//WinLightLocation = FVector(RandDistance, 865, 40);
-//WinLightRotation = FRotator(-90, 270, -180);
-//WinLight = GetWorld()->SpawnActor<ARectLight>(WinLightLocation, WinLightRotation);
-//WinLight->SetLightColor(FLinearColor::Blue);
-////***Cast Component onto Actor***
-//URectLightComponent * GetWinLight = Cast<URectLightComponent>(WinLight->GetComponentByClass(URectLightComponent::StaticClass()));
-//GetWinLight->SetMobility(EComponentMobility::Movable);
-//GetWinLight->SetSourceWidth(115);
-//GetWinLight->SetSourceHeight(115);
-
 //////////////////////////////////////////////////////////////////////////
 // Animation
 
@@ -117,16 +107,6 @@ void ASmackCharacter::Tick(float DeltaSeconds)
 		//{
 			if (isSmackableHit)
 			{
-				//WinLightLocation = FVector(RandDistance, 865, 40);
-				//WinLightRotation = FRotator(-90, 270, -180);
-				//WinLight = GetWorld()->SpawnActor<ARectLight>(WinLightLocation, WinLightRotation);
-				//WinLight->SetLightColor(FLinearColor::Blue);
-				////***Cast Component onto Actor***
-				//URectLightComponent * GetWinLight = Cast<URectLightComponent>(WinLight->GetComponentByClass(URectLightComponent::StaticClass()));
-				//GetWinLight->SetMobility(EComponentMobility::Movable);
-				//GetWinLight->SetSourceWidth(115);
-				//GetWinLight->SetSourceHeight(115);
-
 				ASmackableObject * SmackableObject = Cast<ASmackableObject>(OutHit.GetActor());
 				if (SmackableObject)
 				{
@@ -189,6 +169,7 @@ void ASmackCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASmackCharacter::MoveRight);
+	PlayerInputComponent->BindAction("Smack", IE_Pressed, this, &ASmackCharacter::Smack);
 
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &ASmackCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &ASmackCharacter::TouchStopped);
@@ -200,6 +181,23 @@ void ASmackCharacter::MoveRight(float Value)
 
 	// Apply the input to the character motion
 	AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
+}
+
+void ASmackCharacter::Smack()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Smack")));
+	//Check if semicircle trace is hitting the SmackableObject
+		///If so, cast to SmackableObject::AddImpulse
+		/*ASmackableObject * SmackableObject = Cast<ASmackableObject>(OutHit.GetActor());
+		if (SmackableObject)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Cast To: %s"), *OutHit.GetActor()->GetName()));
+			SmackableObject->AddImpulse();
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("No Cast")));
+		}*/
 }
 
 void ASmackCharacter::TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location)

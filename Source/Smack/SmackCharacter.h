@@ -46,6 +46,8 @@ protected:
 	/** Called for side to side input */
 	void MoveRight(float Value);
 
+	void Smack();
+
 	void UpdateCharacter();
 
 	/** Handle touch inputs. */
