@@ -149,6 +149,7 @@ void ASmackCharacter::TouchStopped(const ETouchIndex::Type FingerIndex, const FV
 //Semicircle Line Trace in front of the character
 void ASmackCharacter::SmackLineTrace(float deltaSeconds)
 {
+	count = 0;
 	FHitResult OutHit;
 	FCollisionQueryParams CollisionParams(FName(TEXT("SmackableTrace")), true, this);
 
@@ -161,26 +162,40 @@ void ASmackCharacter::SmackLineTrace(float deltaSeconds)
 		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, .01, 0, 3);
 
 		IsSmackableHit = GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_GameTraceChannel2, CollisionParams);
-		if (IsSmackableHit && IsSmacking)
+		//If line trace hits a smackable object
+		if (IsSmackableHit)
 		{
-			ASmackableObject * SmackableObject = Cast<ASmackableObject>(OutHit.GetActor());
-			if (SmackableObject)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Cast To: %s"), *OutHit.GetActor()->GetName()));
-				SmackableObject->AddImpulse();
-			}
-			else
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("No Cast")));
-			}
+			count++;
+			//UE_LOG(LogTemp, Warning, TEXT("Smack Hit, Count = %i"), count);
 
-			if (GEngine) {
-
-				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("You are hitting: %s"), *OutHit.GetActor()->GetName()));
-				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("Impact Point: %s"), *OutHit.ImpactPoint.ToString()));
-				//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("Normal Point: %s"), *OutHit.ImpactNormal.ToString()));
+			//If the player input to smack the object is being pressed
+			if (IsSmacking)
+			{
+				ASmackableObject * SmackableObject = Cast<ASmackableObject>(OutHit.GetActor());
+				if (SmackableObject && !Initialized)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Cast To: %s"), *OutHit.GetActor()->GetName()));
+					SmackableObject->AddImpulse();
+					Initialized = true;
+					break;
+				}
+				else
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("No Cast")));
+				}
 			}
 		}
+	}
+
+	//Entire for loop in a single frame never hit a smackable object, so reset Initialized
+	if (count == 0)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Full Arc, Never Hit Smackable Object During Frame"));
+		Initialized = false;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit Smackable Object During Frame"));
 	}
 
 	///Sphere Trace Using SweepBySingleChannel

@@ -58,6 +58,10 @@ protected:
 
 	bool IsSmacking = false;
 
+	bool Initialized = false;
+
+	int count = 0;
+
 	/** Handle touch inputs. */
 	void TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location);
 
