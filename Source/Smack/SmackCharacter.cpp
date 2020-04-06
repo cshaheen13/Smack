@@ -90,7 +90,65 @@ void ASmackCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	//Semicircle Line Trace in front of the character
+	SmackLineTrace(DeltaSeconds);
+
+	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("SmackableObject Hit = %s"), IsSmackableHit));
+
+	UpdateCharacter();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Input
+
+void ASmackCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+{
+	// Note: the 'Jump' action and the 'MoveRight' axis are bound to actual keys/buttons/sticks in DefaultInput.ini (editable from Project Settings..Input)
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ASmackCharacter::MoveRight);
+	PlayerInputComponent->BindAction("Smack", IE_Pressed, this, &ASmackCharacter::Smack);
+	PlayerInputComponent->BindAction("Smack", IE_Released, this, &ASmackCharacter::StopSmack);
+
+	PlayerInputComponent->BindTouch(IE_Pressed, this, &ASmackCharacter::TouchStarted);
+	PlayerInputComponent->BindTouch(IE_Released, this, &ASmackCharacter::TouchStopped);
+}
+
+void ASmackCharacter::MoveRight(float Value)
+{
+	/*UpdateChar();*/
+
+	// Apply the input to the character motion
+	AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
+}
+
+void ASmackCharacter::Smack()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Smack")));
+	IsSmacking = true;
+}
+
+void ASmackCharacter::StopSmack()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("StopSmack")));
+	IsSmacking = false;
+}
+
+void ASmackCharacter::TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location)
+{
+	// Jump on any touch
+	Jump();
+}
+
+void ASmackCharacter::TouchStopped(const ETouchIndex::Type FingerIndex, const FVector Location)
+{
+	// Cease jumping once touch stopped
+	StopJumping();
+}
+
+//Semicircle Line Trace in front of the character
+void ASmackCharacter::SmackLineTrace(float deltaSeconds)
+{
 	FHitResult OutHit;
 	FCollisionQueryParams CollisionParams(FName(TEXT("SmackableTrace")), true, this);
 
@@ -102,35 +160,29 @@ void ASmackCharacter::Tick(float DeltaSeconds)
 		FVector End = FVector((Start.X + (i.X * Front.X)), (Start.Y + i.Y), (Start.Z + i.Z));
 		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, .01, 0, 3);
 
-		bool isSmackableHit = GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_GameTraceChannel2, CollisionParams);
-		//if (GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, CollisionParams))
-		//{
-			if (isSmackableHit)
+		IsSmackableHit = GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_GameTraceChannel2, CollisionParams);
+		if (IsSmackableHit && IsSmacking)
+		{
+			ASmackableObject * SmackableObject = Cast<ASmackableObject>(OutHit.GetActor());
+			if (SmackableObject)
 			{
-				ASmackableObject * SmackableObject = Cast<ASmackableObject>(OutHit.GetActor());
-				if (SmackableObject)
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Cast To: %s"), *OutHit.GetActor()->GetName()));
-					SmackableObject->AddImpulse();
-				}
-				else
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("No Cast")));
-				}
-
-				if (GEngine) {
-
-					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("You are hitting: %s"), *OutHit.GetActor()->GetName()));
-					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("Impact Point: %s"), *OutHit.ImpactPoint.ToString()));
-					//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("Normal Point: %s"), *OutHit.ImpactNormal.ToString()));
-
-				}
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Cast To: %s"), *OutHit.GetActor()->GetName()));
+				SmackableObject->AddImpulse();
 			}
-		//}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("No Cast")));
+			}
+
+			if (GEngine) {
+
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("You are hitting: %s"), *OutHit.GetActor()->GetName()));
+				GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("Impact Point: %s"), *OutHit.ImpactPoint.ToString()));
+				//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("Normal Point: %s"), *OutHit.ImpactNormal.ToString()));
+			}
+		}
 	}
 
-	UpdateCharacter();
-		
 	///Sphere Trace Using SweepBySingleChannel
 	//FHitResult OutHit;
 
@@ -157,59 +209,6 @@ void ASmackCharacter::Tick(float DeltaSeconds)
 	//		// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("All Hit Information: %s"), *Hit.ToString()));
 	//	}
 	//}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// Input
-
-void ASmackCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
-{
-	// Note: the 'Jump' action and the 'MoveRight' axis are bound to actual keys/buttons/sticks in DefaultInput.ini (editable from Project Settings..Input)
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ASmackCharacter::MoveRight);
-	PlayerInputComponent->BindAction("Smack", IE_Pressed, this, &ASmackCharacter::Smack);
-
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &ASmackCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &ASmackCharacter::TouchStopped);
-}
-
-void ASmackCharacter::MoveRight(float Value)
-{
-	/*UpdateChar();*/
-
-	// Apply the input to the character motion
-	AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
-}
-
-void ASmackCharacter::Smack()
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Smack")));
-	//Check if semicircle trace is hitting the SmackableObject
-		///If so, cast to SmackableObject::AddImpulse
-		/*ASmackableObject * SmackableObject = Cast<ASmackableObject>(OutHit.GetActor());
-		if (SmackableObject)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Cast To: %s"), *OutHit.GetActor()->GetName()));
-			SmackableObject->AddImpulse();
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("No Cast")));
-		}*/
-}
-
-void ASmackCharacter::TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	// Jump on any touch
-	Jump();
-}
-
-void ASmackCharacter::TouchStopped(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	// Cease jumping once touch stopped
-	StopJumping();
 }
 
 void ASmackCharacter::UpdateCharacter()

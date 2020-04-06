@@ -58,7 +58,7 @@ void ASmackableObject::Tick(float DeltaTime)
 
 void ASmackableObject::AddImpulse()
 {
-	FVector impulse = FVector(1500, 0, 1500);
+	FVector impulse = FVector(1000, 0, 0);
 	MeshComponent->AddImpulse(impulse, "None", true);
 }
 

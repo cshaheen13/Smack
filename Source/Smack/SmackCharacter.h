@@ -48,7 +48,15 @@ protected:
 
 	void Smack();
 
+	void StopSmack();
+
+	void SmackLineTrace(float deltaSeconds);
+
 	void UpdateCharacter();
+
+	bool IsSmackableHit = false;
+
+	bool IsSmacking = false;
 
 	/** Handle touch inputs. */
 	void TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location);
