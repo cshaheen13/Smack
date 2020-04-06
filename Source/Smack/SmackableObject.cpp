@@ -56,9 +56,9 @@ void ASmackableObject::Tick(float DeltaTime)
 	//UKismetSystemLibrary::DrawDebugCapsule(GetWorld(), GetActorLocation(), 25, 25, FRotator(0, 0, 0), FLinearColor::Red, 0.25f, 3.f);
 }
 
-void ASmackableObject::AddImpulse()
+void ASmackableObject::AddImpulse(float xDirection)
 {
-	FVector impulse = FVector(2000, 0, 2000);
+	FVector impulse = FVector(xDirection * 2000, 0, 2000);
 	UE_LOG(LogClass, Warning, TEXT("AddImpulse"));
 	MeshComponent->AddImpulse(impulse, "None", true);
 }

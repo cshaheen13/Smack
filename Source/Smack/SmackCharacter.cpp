@@ -175,7 +175,7 @@ void ASmackCharacter::SmackLineTrace(float deltaSeconds)
 				if (SmackableObject && !Initialized)
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Cast To: %s"), *OutHit.GetActor()->GetName()));
-					SmackableObject->AddImpulse();
+					SmackableObject->AddImpulse(GetActorForwardVector().X);
 					Initialized = true;
 					break;
 				}
